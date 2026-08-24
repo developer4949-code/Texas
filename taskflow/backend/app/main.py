@@ -28,6 +28,10 @@ app.add_middleware(
 
 app.include_router(tasks.router)
 
+@app.get("/")
+def read_root():
+    return {"message": "TaskFlow API is running. Visit /health for status."}
+
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
