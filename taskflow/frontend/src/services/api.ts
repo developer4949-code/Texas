@@ -23,7 +23,7 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => {
     const contentType = response.headers['content-type'];
-    if (contentType && contentType.includes('text/html')) {
+    if (typeof contentType === 'string' && contentType.includes('text/html')) {
       return Promise.reject({
         response: {
           data: { detail: 'Invalid response: Gateway returned an HTML page instead of JSON. Check your VITE_API_BASE_URL.' }
