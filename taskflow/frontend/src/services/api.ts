@@ -10,6 +10,7 @@ const api = axios.create({
   },
 });
 
+// Request interceptor: Add Authorization header if API key is present
 api.interceptors.request.use((config) => {
   const apiKey = import.meta.env.VITE_CONDUCTOR_API_KEY;
   if (apiKey) {
@@ -18,11 +19,49 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Response interceptor: Validate response format and provide detailed error messages
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response) {
+      const status = error.response.status;
+      const data = error.response.data;
+
+      // Check if response is HTML (common when routing to wrong API gateway)
+      if (typeof data === 'string' && data.includes('<!DOCTYPE') || data.includes('<html')) {
+        const message =
+          'Invalid response: Received HTML instead of JSON. ' +
+          'This typically indicates the API gateway URL is misconfigured. ' +
+          'Verify VITE_API_BASE_URL points to the correct Conductor backend or direct backend URL.';
+        error.message = message;
+      } else if (status === 401 || status === 403) {
+        error.message =
+          error.message || 'Authentication failed. Check your VITE_CONDUCTOR_API_KEY.';
+      } else if (status >= 500) {
+        error.message =
+          data?.detail ||
+          error.message ||
+          'Backend server error. The API gateway or upstream backend may be down.';
+      } else if (status >= 400) {
+        error.message = data?.detail || error.message || 'Request failed';
+      }
+    } else if (error.code === 'ECONNABORTED') {
+      error.message = 'Request timeout. The API gateway may be unreachable.';
+    } else if (!error.response) {
+      error.message =
+        'Network error: Cannot reach the API gateway. ' +
+        'Check that VITE_API_BASE_URL is correct and the backend is running.';
+    }
+
+    return Promise.reject(error);
+  }
+);
+
 export const getTasks = async (status?: string, search?: string): Promise<Task[]> => {
   const params = new URLSearchParams();
   if (status && status !== 'all') params.append('status', status);
   if (search) params.append('search', search);
-  
+
   const response = await api.get(`/api/tasks`, { params });
   return response.data;
 };
@@ -44,7 +83,7 @@ export const updateTask = async (id: number, data: TaskUpdate): Promise<Task> =>
 
 export const completeTask = async (id: number, completed: boolean): Promise<Task> => {
   const response = await api.patch(`/api/tasks/${id}/complete`, null, {
-    params: { completed }
+    params: { completed },
   });
   return response.data;
 };
