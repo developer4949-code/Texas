@@ -15,9 +15,7 @@ export const useTasks = () => {
       if (Array.isArray(data)) {
         setTasks(data);
       } else {
-        console.error("API returned non-array data:", data);
-        setError('Invalid response from server (Gateway routing issue).');
-        setTasks([]);
+        throw { response: { data: { detail: 'Invalid API response format (expected an array).' } } };
       }
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Failed to fetch tasks');

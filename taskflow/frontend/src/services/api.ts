@@ -21,38 +21,38 @@ api.interceptors.request.use((config) => {
 
 // Response interceptor: Validate response format and provide detailed error messages
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    const contentType = response.headers['content-type'];
+    if (contentType && contentType.includes('text/html')) {
+      return Promise.reject({
+        response: {
+          data: { detail: 'Invalid response: Gateway returned an HTML page instead of JSON. Check your VITE_API_BASE_URL.' }
+        }
+      });
+    }
+    return response;
+  },
   (error) => {
     if (error.response) {
       const status = error.response.status;
       const data = error.response.data;
 
-      // Check if response is HTML (common when routing to wrong API gateway)
-      if (typeof data === 'string' && data.includes('<!DOCTYPE') || data.includes('<html')) {
-        const message =
-          'Invalid response: Received HTML instead of JSON. ' +
-          'This typically indicates the API gateway URL is misconfigured. ' +
-          'Verify VITE_API_BASE_URL points to the correct Conductor backend or direct backend URL.';
-        error.message = message;
-      } else if (status === 401 || status === 403) {
-        error.message =
-          error.message || 'Authentication failed. Check your VITE_CONDUCTOR_API_KEY.';
+      if (status === 401 || status === 403) {
+        error.message = error.message || 'Authentication failed. Check your VITE_CONDUCTOR_API_KEY.';
       } else if (status >= 500) {
-        error.message =
-          data?.detail ||
-          error.message ||
-          'Backend server error. The API gateway or upstream backend may be down.';
+        error.message = data?.detail || error.message || 'Backend server error. The API gateway or upstream backend may be down.';
       } else if (status >= 400) {
         error.message = data?.detail || error.message || 'Request failed';
       }
     } else if (error.code === 'ECONNABORTED') {
       error.message = 'Request timeout. The API gateway may be unreachable.';
     } else if (!error.response) {
-      error.message =
-        'Network error: Cannot reach the API gateway. ' +
-        'Check that VITE_API_BASE_URL is correct and the backend is running.';
+      error.message = 'Network error: Cannot reach the API gateway. Check that VITE_API_BASE_URL is correct and the backend is running.';
     }
 
+    return Promise.reject(error);
+  }
+);
     return Promise.reject(error);
   }
 );
