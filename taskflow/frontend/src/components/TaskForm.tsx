@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TaskCreate, Task, Priority } from '../types';
+import type { TaskCreate, Task, Priority } from '../types';
 
 interface TaskFormProps {
   onSubmit: (data: TaskCreate) => Promise<boolean>;

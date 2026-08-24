@@ -2,7 +2,7 @@ export type Priority = 'low' | 'medium' | 'high';
 
 export interface Task {
   id: number;
-  title: str;
+  title: string;
   description: string | null;
   priority: Priority;
   completed: boolean;

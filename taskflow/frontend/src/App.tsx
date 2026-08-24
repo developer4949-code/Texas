@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Header from './components/Header';
 import DashboardStats from './components/DashboardStats';
 import TaskForm from './components/TaskForm';
 import Filters from './components/Filters';
 import TaskList from './components/TaskList';
 import { useTasks } from './hooks/useTasks';
-import { Task } from './types';
+import type { Task } from './types';
 
 function App() {
   const {
