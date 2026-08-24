@@ -13,7 +13,7 @@ const api = axios.create({
 api.interceptors.request.use((config) => {
   const apiKey = import.meta.env.VITE_CONDUCTOR_API_KEY;
   if (apiKey) {
-    config.headers['X-API-Key'] = apiKey;
+    config.headers['Authorization'] = `Bearer ${apiKey}`;
   }
   return config;
 });
