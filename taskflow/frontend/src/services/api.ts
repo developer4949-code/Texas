@@ -10,6 +10,14 @@ const api = axios.create({
   },
 });
 
+api.interceptors.request.use((config) => {
+  const apiKey = import.meta.env.VITE_CONDUCTOR_API_KEY;
+  if (apiKey) {
+    config.headers['X-API-Key'] = apiKey;
+  }
+  return config;
+});
+
 export const getTasks = async (status?: string, search?: string): Promise<Task[]> => {
   const params = new URLSearchParams();
   if (status && status !== 'all') params.append('status', status);

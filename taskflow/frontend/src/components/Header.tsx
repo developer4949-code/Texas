@@ -17,6 +17,11 @@ const Header: React.FC = () => {
             </div>
           </div>
           <div className="flex items-center gap-4">
+            {import.meta.env.VITE_CONDUCTOR_API_KEY && (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
+                Connected through Conductor
+              </span>
+            )}
             <span className="text-sm text-gray-500 hidden sm:block">Manage your daily tasks efficiently</span>
           </div>
         </div>
